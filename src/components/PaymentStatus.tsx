@@ -24,12 +24,12 @@ const PaymentStatus: React.FC = () => {
     };
 
     const getStatusMessage = () => {
-        switch (status?.state) {
-            case "completed":
+        switch (status.data.status) {
+            case "COMPLETED":
                 return { message: "¡El pago se realizó con éxito!", color: "green" };
-            case "pending":
-                return { message: "El pago está pendiente. Aún no se han recibido fondos.", color: "orange" };
-            case "failed":
+            case "WAITING":
+                return { message: "Estamos esperando el pago. Todavía no se han recibido fondos.", color: "orange" };
+            case "FAILED":
                 return { message: "El estado del pago es fallido. No se completó correctamente.", color: "red" };
             default:
                 return { message: "Estado desconocido.", color: "gray" };
@@ -58,10 +58,14 @@ const PaymentStatus: React.FC = () => {
             {error && <p style={{ color: "red", marginTop: "20px" }}>{error}</p>}
 
             {status && (
-                <div style={{ marginTop: "20px", border: "1px solid #ccc", padding: "10px", borderRadius: "8px" }}>
-                    <h3>Estado del Pago</h3>
+                <>
+                <div style={{ marginTop: "20px", border: "1px solid #ccc", padding: "15px", borderRadius: "8px" }}>
+                    <h3>Detalles del Estado del Pago</h3>
                     <p>
-                        <strong>Dirección:</strong> {address}
+                        <strong>Dirección:</strong> {status.data.address}
+                    </p>
+                    <p>
+                        <strong>Red:</strong> {status.data.network}
                     </p>
                     <p>
                         <strong>Estado:</strong>{" "}
@@ -70,15 +74,32 @@ const PaymentStatus: React.FC = () => {
                         </span>
                     </p>
                     <p>
-                        <strong>Total Recibido:</strong> {status.totalReceived} {status.currency || "BUSD"}
+                        <strong>Total Recibido:</strong> {status.data.currentBalance} {status.data.smartContractSymbol || "BUSD"}
                     </p>
-                    {status.state === "pending" && (
-                        <p style={{ color: "orange" }}>
-                            Por favor, asegúrate de realizar el pago a la dirección correcta.
-                        </p>
+                    <p>
+                        <strong>Dirección del Contrato Inteligente:</strong> {status.data.smartContractAddress}
+                    </p>
+                    <p>
+                        <strong>Objetivo de Fondos:</strong> {status.fundsGoal} {status.data.smartContractSymbol || "BUSD"}
+                    </p>
+                    <p>
+                        <strong>Estado de Fondos:</strong> {status.data.fundStatus}
+                    </p>
+                    <p>
+                        <strong>Progreso del Proceso:</strong> Paso {status.data.processStep} de{" "}
+                        {status.processTotalSteps}
+                    </p>
+                    <p>
+                        <strong>Fecha de Expiración:</strong>{" "}
+                        {new Date(status.data.fundsExpirationAt * 1000).toLocaleString()}
+                    </p>
+                    {status.status === "WAITING" && (
+                        <p style={{ color: "orange" }}>Estamos esperando los pagos necesarios para completar.</p>
                     )}
                 </div>
+                </>
             )}
+
         </div>
     );
 };
